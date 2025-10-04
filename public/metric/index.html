@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlockPlane Metric - Free Construction Carbon Calculator</title>
+    <style>
+        /* Theme Variables */
+        :root {
+            --bg-primary: #fafbfc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+            --border-color: #e2e8f0;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --primary-light: #d1fae5;
+            --primary-dark: #047857;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gold: #f59e0b;
+            --gold-light: #fef3c7;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-accent: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --border-color: #334155;
+            --primary: #10b981;
+            --primary-hover: #34d399;
+            --primary-light: #064e3b;
+            --primary-dark: #059669;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Reset & Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Header */
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .logo-text h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: #FFD700;
+            text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .logo-text .subtitle {
+            font-size: 1.125rem;
+            color: #FFD700;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .upgrade-link {
+            background: white;
+            color: var(--primary);
+            padding: 0.625rem 1.5rem;
+            border-radius: 2rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .upgrade-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: var(--gradient-primary);
+            border-radius: 1.5rem;
+            padding: 4rem 3rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            color: white;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            letter-spacing: -0.025em;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.95;
+            margin-bottom: 2rem;
+            max-width: 700px;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-btn {
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: none;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .hero-btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .hero-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+        }
+
+        .hero-btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hero-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border-radius: 1.25rem;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-icon {
+            font-size: 1.75rem;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .badge-success {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+        .badge-gold {
+            background: var(--gold-light);
+            color: #92400e;
+        }
+
+        .badge-locked {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .badge-locked:hover {
+            background: var(--border-color);
+            transform: scale(1.05);
+        }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            transform: translateY(-1px);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--text-secondary);
+        }
+
+        .btn-gold {
+            background: var(--gradient-gold);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            background: var(--bg-secondary);
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .comparison-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            background: var(--bg-tertiary);
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            color: var(--text-secondary);
+        }
+
+        .comparison-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-row:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .comparison-feature {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .comparison-value {
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .comparison-sustainable {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .metric-card {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 2px solid var(--border-color);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-description {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+
+        .metric-locked {
+            filter: blur(8px);
+            user-select: none;
+        }
+
+        .metric-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .metric-overlay {
+            background: rgba(30, 41, 59, 0.95);
+        }
+
+        .metric-overlay:hover {
+            background: rgba(255, 255, 255, 0.98);
+        }
+
+        [data-theme="dark"] .metric-overlay:hover {
+            background: rgba(30, 41, 59, 0.98);
+        }
+
+        .metric-overlay button {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1.25rem 1.5rem;
+            border-radius: 0.75rem;
+            margin: 1.5rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            color: #92400e;
+        }
+
+        .alert-success {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary-dark);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 1.5rem;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 2.5rem 2.5rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .modal-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--bg-tertiary);
+            border: none;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2.5rem;
+        }
+
+        /* Pricing Grid */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .pricing-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .pricing-card.popular {
+            border-color: var(--primary);
+            border-width: 3px;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+
+        .pricing-card.popular::before {
+            content: "MOST POPULAR";
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.375rem 1.25rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            box-shadow: var(--shadow);
+        }
+
+        .pricing-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .pricing-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price span {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .pricing-period {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features li {
+            padding: 0.75rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .pricing-features li::before {
+            content: "✓";
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .pricing-cta {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            margin-top: 4rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Animations */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 3rem 2rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .hero-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .comparison-header,
+            .comparison-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .comparison-value {
+                text-align: left;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🏗️</div>
+                <div class="logo-text">
+                    <h1>BlockPlane Metric</h1>
+                    <div class="subtitle">Free Construction Carbon Calculator</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle">
+                    <span id="themeIcon"></span>
+                    <span id="themeText">Dark</span>
+                </button>
+                <a href="/" class="upgrade-link">Upgrade to Enhanced →</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    
+                    <span>Paris Agreement Aligned</span>
+                </div>
+                <h2 class="hero-title">Calculate Your Construction Impact in 60 Seconds</h2>
+                <p class="hero-subtitle">Get instant carbon footprint analysis and sustainability scores for your construction materials. Free, fast, and audit-ready.</p>
+                <div class="hero-actions">
+                    <button class="hero-btn hero-btn-primary" onclick="loadExample()">
+                        
+                        <span>Try Sample Project</span>
+                    </button>
+                    <button class="hero-btn hero-btn-secondary" onclick="scrollToCalculator()">
+                        
+                        <span>Start Fresh Calculation</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Environmental Metrics -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-value">LIS Score</div>
+                <div class="stat-label">Lifecycle Impact Score (0-100)</div>
+                <div class="stat-description">Measures total environmental impact across material lifecycle</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">RIS Score</div>
+                <div class="stat-label">Regenerative Impact Score (0-100)</div>
+                <div class="stat-description">Measures regenerative design and circular economy potential</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">CPI Analysis</div>
+                <div class="stat-label">Cost per tonne CO₂e</div>
+                <div class="stat-description">Financial impact of carbon reduction decisions</div>
+            </div>
+        </div>
+
+        <!-- Quick Comparison -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    
+                    <span>Quick Material Comparison</span>
+                </div>
+                <span class="badge badge-success">
+                    <span>✓</span>
+                    <span>Free</span>
+                </span>
+            </div>
+
+            <div class="alert alert-info">
+                
+                <div class="alert-content">
+                    <strong>See the difference:</strong> Compare conventional vs. sustainable materials to understand your carbon savings potential.
+                    <a href="#" onclick="showUpgradeModal('comparison'); return false;" style="color: var(--accent); font-weight: 600; text-decoration: none;"> Upgrade for unlimited comparisons →</a>
+                </div>
+            </div>
+
+            <div class="comparison-table">
+                <div class="comparison-header">
+                    <div>Material</div>
+                    <div>Conventional</div>
+                    <div>Sustainable</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-feature">Concrete (per m³)</div>
+                    <div class="comparison-value">410 kg CO₂e</div>
+                    <div class="comparison-value comparison-sustainable">285 kg CO₂e ↓30%</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-feature">Steel (per tonne)</div>
+                    <div class="comparison-value">1,850 kg CO₂e</div>
+                    <div class="comparison-value comparison-sustainable">950 kg CO₂e ↓49%</div>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-feature">Insulation (per m²)</div>
+                    <div class="comparison-value">12 kg CO₂e</div>
+                    <div class="comparison-value comparison-sustainable">4 kg CO₂e ↓67%</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <button class="btn-gold" onclick="showUpgradeModal('comparison')">
+                    
+                    <span>Unlock Full Material Database</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Calculator Card -->
+        <div class="card" id="calculator">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">🧮</span>
+                    <span>Carbon Calculator</span>
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="materialType">Material Type</label>
+                    <select id="materialType">
+                        <option value="concrete">Concrete</option>
+                        <option value="steel">Steel</option>
+                        <option value="timber">Timber</option>
+                        <option value="insulation">Insulation</option>
+                        <option value="glass">Glass</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" id="quantity" placeholder="Enter quantity" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label for="unit">Unit</label>
+                    <select id="unit">
+                        <option value="m3">Cubic Meters (m³)</option>
+                        <option value="m2">Square Meters (m²)</option>
+                        <option value="tonne">Tonnes</option>
+                        <option value="kg">Kilograms</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="projectName">Project Name (Optional)</label>
+                    <input type="text" id="projectName" placeholder="e.g., Office Building">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="calculate()">
+                    <span>🔍</span>
+                    <span>Calculate Impact</span>
+                </button>
+                <button class="btn-secondary" onclick="clearCalculator()">
+                    
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Card -->
+        <div class="card" id="resultsCard" style="display: none;">
+            <div class="card-header">
+                <div class="card-title">
+                    
+                    <span>Your Sustainability Metrics</span>
+                </div>
+                <span class="badge badge-success" id="parisAlignedBadge" style="display: none;">
+                    
+                    <span>Paris Aligned</span>
+                </span>
+            </div>
+
+            <div class="metrics-grid">
+                <!-- LIS Score -->
+                <div class="metric-card">
+                    <div class="metric-label">
+                        
+                        <span>LIS Score</span>
+                    </div>
+                    <div class="metric-value" id="lisScore">--</div>
+                    <div class="metric-description">Lifecycle Impact Score</div>
+                </div>
+
+                <!-- RIS Score -->
+                <div class="metric-card">
+                    <div class="metric-label">
+                        
+                        <span>RIS Score</span>
+                    </div>
+                    <div class="metric-value" id="risScore">--</div>
+                    <div class="metric-description">Regenerative Impact Score</div>
+                </div>
+
+                <!-- CPI (Locked) -->
+                <div class="metric-card" style="position: relative;">
+                    <div class="metric-label">
+                        <span>CPI</span>
+                        <span class="badge badge-locked" onclick="showUpgradeModal('cpi')">
+                            🔒 Locked
+                        </span>
+                    </div>
+                    <div class="metric-value metric-locked" style="filter: blur(8px); user-select: none;">$••.••</div>
+                    <div class="metric-description">$/tCO₂e</div>
+                    <div class="metric-overlay" onclick="showUpgradeModal('cpi')">
+                        <button class="btn-gold">
+                            <span>Unlock CPI Analysis</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Total Carbon -->
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <span>☁️</span>
+                        <span>Total Carbon</span>
+                    </div>
+                    <div class="metric-value" id="totalCarbon">--</div>
+                    <div class="metric-description">kg CO₂e</div>
+                </div>
+            </div>
+
+            <div class="alert alert-warning" style="margin-top: 2rem;">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-content">
+                    <strong>Need audit-ready reports?</strong> Upgrade to export PDF/CSV with full CPI analysis, regional pricing, and VE recommendations.
+                    <a href="#" onclick="showUpgradeModal('export'); return false;" style="color: #92400e; font-weight: 600; text-decoration: none;"> Learn more →</a>
+                </div>
+            </div>
+
+            <div class="button-group" style="margin-top: 2rem;">
+                <button class="btn-secondary" onclick="exportPreview()">
+                    <span>📄</span>
+                    <span>Export Preview (Watermarked)</span>
+                </button>
+                <button class="btn-gold" onclick="showUpgradeModal('export')">
+                    
+                    <span>Unlock Full Export</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Alternative Materials -->
+        <div class="card" id="alternativesCard" style="display: none;">
+            <div class="card-header">
+                <div class="card-title">
+                    
+                    <span>Alternative Materials</span>
+                </div>
+                <span class="badge badge-locked" onclick="showUpgradeModal('alternatives')">
+                    Upgrade to Unlock
+                </span>
+            </div>
+
+            <div class="alert alert-info">
+                
+                <div class="alert-content">
+                    <strong>See better options:</strong> Get AI-powered recommendations for lower-carbon alternatives with full Value Engineering memos.
+                </div>
+            </div>
+
+            <div style="filter: blur(6px); user-select: none; pointer-events: none; margin: 1.5rem 0;">
+                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid var(--border-color);">
+                    <strong>Alternative 1:</strong> Recycled Steel (48% carbon reduction, +$2.30/tonne)
+                </div>
+                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid var(--border-color);">
+                    <strong>Alternative 2:</strong> Low-Carbon Concrete (35% carbon reduction, -$1.50/m³)
+                </div>
+                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid var(--border-color);">
+                    <strong>Alternative 3:</strong> Cross-Laminated Timber (62% carbon reduction, +$8.40/m³)
+                </div>
+            </div>
+
+            <button class="btn-gold" onclick="showUpgradeModal('alternatives')">
+                
+                <span>See Full VE Memo & Alternatives</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Upgrade Modal -->
+    <div class="modal" id="upgradeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Upgrade to BlockPlane Enhanced</h2>
+                <p class="modal-subtitle">Unlock audit-ready reports, CPI analysis, and full material database</p>
+                <button class="modal-close" onclick="closeUpgradeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="pricing-grid">
+                    <!-- Solo Plan -->
+                    <div class="pricing-card" onclick="selectPlan('solo')">
+                        <div class="pricing-name">Solo</div>
+                        <div class="pricing-price">$29<span>/mo</span></div>
+                        <div class="pricing-period">or $299/year (save 17%)</div>
+                        <ul class="pricing-features">
+                            <li>Full CPI analysis</li>
+                            <li>Unlimited projects</li>
+                            <li>PDF/CSV exports</li>
+                            <li>Material database</li>
+                            <li>Email support</li>
+                        </ul>
+                        <button class="btn-primary pricing-cta">
+                            Start 7-Day Free Trial
+                        </button>
+                    </div>
+
+                    <!-- Small Firm Plan -->
+                    <div class="pricing-card popular" onclick="selectPlan('small')">
+                        <div class="pricing-name">Small Firm</div>
+                        <div class="pricing-price">$79<span>/mo</span></div>
+                        <div class="pricing-period">or $799/year (save 17%)</div>
+                        <ul class="pricing-features">
+                            <li>Everything in Solo</li>
+                            <li>2-5 team members</li>
+                            <li>Regional pricing</li>
+                            <li>VE recommendations</li>
+                            <li>Priority support</li>
+                        </ul>
+                        <button class="btn-primary pricing-cta">
+                            Start 7-Day Free Trial
+                        </button>
+                    </div>
+
+                    <!-- Mid Firm Plan -->
+                    <div class="pricing-card" onclick="selectPlan('mid')">
+                        <div class="pricing-name">Mid Firm</div>
+                        <div class="pricing-price">$149<span>/mo</span></div>
+                        <div class="pricing-period">or $1,499/year (save 17%)</div>
+                        <ul class="pricing-features">
+                            <li>Everything in Small Firm</li>
+                            <li>6-10 team members</li>
+                            <li>Audit packets</li>
+                            <li>Custom baselines</li>
+                            <li>Dedicated support</li>
+                        </ul>
+                        <button class="btn-primary pricing-cta">
+                            Start 7-Day Free Trial
+                        </button>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.1rem;">
+                        <strong>One-time project?</strong> Try our Project Pass
+                    </p>
+                    <button class="btn-secondary" onclick="selectPlan('project')" style="margin: 0 auto;">
+                        <span>$199 / Single Project Pass</span>
+                    </button>
+                </div>
+
+                <div style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-secondary); border-radius: 0.75rem; text-align: center;">
+                    <p style="font-size: 0.95rem; color: var(--text-secondary);">
+                        ✓ 7-day free trial • ✓ Cancel anytime • ✓ No credit card required for trial
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">BlockPlane Metric</p>
+        <p>Free Construction Carbon Calculator</p>
+        <div class="footer-links">
+            <a href="/">Upgrade to Enhanced</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Contact</a>
+        </div>
+        <p style="margin-top: 1.5rem; font-size: 0.85rem;">© 2025 BlockPlane. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Theme Management
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('bp-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton(savedTheme);
+        })();
+
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('bp-theme', newTheme);
+            updateThemeButton(newTheme);
+        });
+
+        function updateThemeButton(theme) {
+            const icon = document.getElementById('themeIcon');
+            const text = document.getElementById('themeText');
+            if (theme === 'dark') {
+                icon.textContent = '';
+                text.textContent = 'Light';
+            } else {
+                icon.textContent = '';
+                text.textContent = 'Dark';
+            }
+        }
+
+        // Material carbon factors
+        const carbonFactors = {
+            concrete: { value: 410, unit: 'm3' },
+            steel: { value: 1850, unit: 'tonne' },
+            timber: { value: 95, unit: 'm3' },
+            insulation: { value: 12, unit: 'm2' },
+            glass: { value: 850, unit: 'tonne' }
+        };
+
+        // Load example
+        function loadExample() {
+            document.getElementById('materialType').value = 'concrete';
+            document.getElementById('quantity').value = '100';
+            document.getElementById('unit').value = 'm3';
+            document.getElementById('projectName').value = 'Sample Office Building';
+            calculate();
+            scrollToCalculator();
+        }
+
+        // Scroll to calculator
+        function scrollToCalculator() {
+            document.getElementById('calculator').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Calculate
+        function calculate() {
+            const materialType = document.getElementById('materialType').value;
+            const quantity = parseFloat(document.getElementById('quantity').value);
+            const unit = document.getElementById('unit').value;
+
+            if (!quantity || quantity <= 0) {
+                alert('Please enter a valid quantity');
+                return;
+            }
+
+            const factor = carbonFactors[materialType];
+            let totalCarbon = factor.value * quantity;
+
+            if (unit === 'kg' && factor.unit === 'tonne') {
+                totalCarbon = totalCarbon / 1000;
+            }
+
+            const lisScore = Math.max(0, Math.min(100, 100 - (totalCarbon / quantity / 10))).toFixed(1);
+            const risScore = Math.max(0, Math.min(100, 85 - (totalCarbon / quantity / 15))).toFixed(1);
+
+            document.getElementById('lisScore').textContent = lisScore;
+            document.getElementById('risScore').textContent = risScore;
+            document.getElementById('totalCarbon').textContent = totalCarbon.toFixed(2);
+
+            // Show Paris Aligned badge only if both scores meet threshold (>= 60)
+            const parisAlignedBadge = document.getElementById('parisAlignedBadge');
+            if (parseFloat(lisScore) >= 60 && parseFloat(risScore) >= 60) {
+                parisAlignedBadge.style.display = 'inline-flex';
+            } else {
+                parisAlignedBadge.style.display = 'none';
+            }
+
+            document.getElementById('resultsCard').style.display = 'block';
+            document.getElementById('alternativesCard').style.display = 'block';
+
+            document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            trackEvent('calculation_completed', { material: materialType, quantity: quantity });
+        }
+
+        // Clear calculator
+        function clearCalculator() {
+            document.getElementById('materialType').value = 'concrete';
+            document.getElementById('quantity').value = '';
+            document.getElementById('unit').value = 'm3';
+            document.getElementById('projectName').value = '';
+            document.getElementById('resultsCard').style.display = 'none';
+            document.getElementById('alternativesCard').style.display = 'none';
+        }
+
+        // Export preview
+        function exportPreview() {
+            alert('Export preview will download with watermark. Upgrade to get full audit-ready PDF/CSV exports!');
+            trackEvent('export_preview_clicked');
+        }
+
+        // Show upgrade modal
+        function showUpgradeModal(source) {
+            document.getElementById('upgradeModal').classList.add('active');
+            trackEvent('upgrade_modal_opened', { source: source });
+        }
+
+        // Close upgrade modal
+        function closeUpgradeModal() {
+            document.getElementById('upgradeModal').classList.remove('active');
+        }
+
+        // Close modal on outside click
+        document.getElementById('upgradeModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUpgradeModal();
+            }
+        });
+
+        // Select plan
+        function selectPlan(plan) {
+            trackEvent('plan_selected', { plan: plan });
+            alert(`You selected the ${plan} plan. In production, this would redirect to Stripe Checkout.`);
+        }
+
+        // Analytics tracking
+        function trackEvent(eventName, properties = {}) {
+            console.log('Event:', eventName, properties);
+        }
+
+        // Track page view
+        trackEvent('page_viewed', { page: 'metric_calculator' });
+    </script>
+</body>
+</html>
