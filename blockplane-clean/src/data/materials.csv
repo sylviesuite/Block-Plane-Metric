@@ -1,0 +1,17 @@
+category,subtype,name,unit,quantity,notes
+Foundation,Concrete,Slab 4in,yd3,13.6,Portland cement baseline
+Walls,Framing,2x6 Stud 9ft,ea,215,16" OC incl. 10%
+Walls,Framing,2x6 Plates,lf,780,≈563 bd-ft
+Walls,Sheathing,OSB 4x8,sheet,81,10% waste incl.
+Walls,Insulation,Fiberglass R-19,ft2,1929,Standard wall cavities
+Walls,Cladding,Vinyl Siding,ft2,2090,Exterior coverage
+Roof,Sheathing,OSB 4x8,sheet,37,10% waste incl.
+Roof,Cover,Asphalt Shingles,bundle,35,Incl. starter/ridge
+Roof,Underlayment,Synthetic Felt,ft2,1160,—
+Roof,Insulation,Fiberglass R-38,ft2,1000,Attic coverage
+Floors,Subfloor,OSB 4x8,sheet,69,10% waste incl.
+Floors,Finish,Red Oak 5/4x3x10',board,880,10% waste incl.
+Interior,Drywall,Drywall 4x8 1/2",sheet,198,10% waste incl.
+Interior,Doors,Interior Hollow-Core,ea,10,—
+Openings,Windows,Vinyl Double-Pane,ea,14,≈15 ft² each
+Openings,Doors,Exterior Insulated Steel,ea,2,≈20 ft² each

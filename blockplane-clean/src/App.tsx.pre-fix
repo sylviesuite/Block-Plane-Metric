@@ -1,0 +1,407 @@
+import AltRecsPanel from './components/AltRecsPanel';
+// src/App.tsx
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import Papa from "papaparse";
+
+import CsvUpload from "./components/CsvUpload";
+import InsightWrapper from "./components/InsightWrapper";
+import LifecycleBarChart, { type MaterialPhaseData } from "./components/LifecycleBarChart";
+import CpiStrip from "./components/CpiStrip";
+import ExportPanel from "./components/ExportPanel";
+import StatsHeader from "./components/StatsHeader";
+import FilterBar from "./components/FilterBar";
+import MaterialsTable from "./components/MaterialsTable";
+import PrintLayout from "./components/PrintLayout";
+import ShareBanner from "./components/ShareBanner";
+import DarkModeToggle from "./components/DarkModeToggle";
+import ScenarioPanel from "./components/ScenarioPanel";
+
+import type { Row, Filters, AltRec } from "./types";
+import { CSV_PATH, BASELINE_NAME, PARIS_LIS_TARGET, APP_VERSION } from "./config";
+import { generateAltRecs } from "./lib/alternatives";
+import useDebounce from "./lib/useDebounce";
+import { applyReplacements, type ReplacementMap } from "./lib/scenario";
+import { makeShareHash, parseShareHash, type ShareState } from "./lib/share";
+import shortcuts from "./lib/shortcuts";
+
+// ---------- constants / helpers ----------
+const STORAGE_KEY = "blockplane_csv_text_v1";
+const SCENARIO_KEY = "blockplane_replacements_v1";
+const REQUIRED_HEADERS = ["category", "subtype", "name", "unit", "quantity"] as const;
+
+function parseRows(text: string): Row[] {
+  const parsed = Papa.parse(text, { header: true, skipEmptyLines: true, dynamicTyping: true });
+  const data = (parsed.data || []) as Row[];
+  return data.filter((r) => r && typeof r === "object" && Object.keys(r as object).length > 0);
+}
+function validateHeaders(rows: Row[]): { ok: boolean; missing: string[] } {
+  if (!rows.length) return { ok: false, missing: Array.from(REQUIRED_HEADERS) };
+  const keys = new Set(Object.keys(rows[0] as object));
+  const missing = Array.from(REQUIRED_HEADERS).filter((k) => !keys.has(k));
+  return { ok: missing.length === 0, missing };
+}
+function num(x: unknown, fallback = 0): number {
+  const n = typeof x === "number" ? x : Number(x);
+  return Number.isFinite(n) ? n : fallback;
+}
+function toNum(x: unknown): number | undefined {
+  const n = typeof x === "number" ? x : Number(x);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+// ---------- component ----------
+export default function App(): JSX.Element {
+  // raw data + status
+  const [csvText, setCsvText] = useState<string>("");
+  const [rows, setRows] = useState<Row[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // view state
+  const [viewMode, setViewMode] = useState<"LIS" | "RIS">("LIS");
+  const [chartSvg, setChartSvg] = useState<SVGSVGElement | null>(null);
+
+  // filters
+  const [filters, setFilters] = useState<Filters>({ query: "", category: undefined, subtype: undefined });
+  const debouncedQuery = useDebounce(filters.query, 200);
+
+  // scenario swaps (replacements) + persistence
+  const [replacements, setReplacements] = useState<ReplacementMap>({});
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(SCENARIO_KEY);
+      if (raw) setReplacements(JSON.parse(raw));
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem(SCENARIO_KEY, JSON.stringify(replacements));
+    } catch {}
+  }, [replacements]);
+
+  // share-link banner
+  const [pendingShare, setPendingShare] = useState<ShareState | null>(null);
+
+  // ------- load CSV (cache → fetch) -------
+  const setAndParse = (text: string) => {
+    setCsvText(text);
+    try {
+      localStorage.setItem(STORAGE_KEY, text);
+    } catch {}
+
+    const parsed = parseRows(text);
+    const { ok, missing } = validateHeaders(parsed);
+    if (!ok) {
+      setRows([]);
+      setError(`CSV missing required header(s): ${missing.join(", ")}`);
+    } else {
+      setError(null);
+      setRows(parsed);
+    }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const cached = localStorage.getItem(STORAGE_KEY);
+        if (cached) {
+          if (!cancelled) setAndParse(cached);
+        } else if (CSV_PATH) {
+          const res = await fetch(CSV_PATH, { cache: "no-store" });
+          if (!res.ok) throw new Error(`Failed to fetch CSV at ${CSV_PATH}`);
+          const text = await res.text();
+          if (!cancelled) setAndParse(text);
+        } else {
+          if (!cancelled) setError("CSV_PATH is not configured in config.ts");
+        }
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message ?? "Failed to load CSV");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // detect shared state on mount
+  useEffect(() => {
+    const shared = parseShareHash(window.location.hash);
+    if (shared) setPendingShare(shared);
+  }, []);
+
+  const handleUpload = (text: string) => {
+    setAndParse(text);
+    setLoading(false);
+  };
+
+  // copy share link
+  const copyShare = useCallback(async () => {
+    const hash = makeShareHash({ f: filters, v: viewMode, r: replacements });
+    const url = location.origin + location.pathname + hash;
+    await navigator.clipboard.writeText(url);
+  }, [filters, viewMode, replacements]);
+
+  // keyboard shortcuts
+  useEffect(() => {
+    const cleanup = shortcuts({
+      "/": () => document.getElementById("bp-help")?.classList.toggle("hidden"),
+      f: () => (document.getElementById("bp-search") as HTMLInputElement | null)?.focus(),
+      l: () => setViewMode("LIS"),
+      r: () => setViewMode("RIS"),
+      p: () => window.print(),
+      c: () => void copyShare(),
+    });
+    return cleanup;
+  }, [copyShare]);
+
+  // share banner actions
+  const applySharedState = () => {
+    if (!pendingShare) return;
+    if (pendingShare.f) setFilters(pendingShare.f);
+    if (pendingShare.v) setViewMode(pendingShare.v);
+    if (pendingShare.r) setReplacements(pendingShare.r);
+    setPendingShare(null);
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+  };
+  const dismissSharedState = () => {
+    setPendingShare(null);
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+  };
+
+  // apply replacements → scenario rows
+  const scenarioRows = useMemo(() => applyReplacements(rows, replacements), [rows, replacements]);
+
+  // filter options
+  const categoryOptions = useMemo(() => {
+    const s = new Set<string>();
+    rows.forEach((r) => r.category && s.add(String(r.category)));
+    return Array.from(s).sort();
+  }, [rows]);
+
+  const subtypeOptions = useMemo(() => {
+    const s = new Set<string>();
+    rows
+      .filter((r) => !filters.category || r.category === filters.category)
+      .forEach((r) => r.subtype && s.add(String(r.subtype)));
+    return Array.from(s).sort();
+  }, [rows, filters.category]);
+
+  // filtered rows (based on scenario)
+  const filteredRows = useMemo(() => {
+    const q = debouncedQuery.trim().toLowerCase();
+    return scenarioRows.filter((r) => {
+      if (filters.category && r.category !== filters.category) return false;
+      if (filters.subtype && r.subtype !== filters.subtype) return false;
+      if (q) {
+        const hay = `${r.name ?? ""} ${r.category ?? ""} ${r.subtype ?? ""} ${r.unit ?? ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [scenarioRows, filters.category, filters.subtype, debouncedQuery]);
+
+  // chart data
+  const chartData: MaterialPhaseData[] = useMemo(() => {
+    if (!filteredRows.length) return [];
+    return filteredRows.map((r) => {
+      const origin = num(r.origin);
+      const factory = num(r.factory);
+      const transport = num(r.transport);
+      const construction = num(r.construction);
+      const disposal = num(r.disposal);
+      const lis = r.lis != null ? num(r.lis) : origin + factory + transport + construction + disposal;
+      const ris = num(r.ris);
+      return { name: r.name ?? "Unnamed", lis, ris, origin, factory, transport, construction, disposal };
+    });
+  }, [filteredRows]);
+
+  // CPI strip items
+  const cpiItems = useMemo(
+    () =>
+      filteredRows.map((r) => ({
+        name: r.name ?? "Unnamed",
+        unit: r.unit,
+        price: toNum(r.price),
+        cpi: toNum(r.cpi),
+      })),
+    [filteredRows]
+  );
+
+  // suggested alternatives
+  const altRecs: AltRec[] = useMemo(
+    () =>
+      generateAltRecs(filteredRows, {
+        minDeltaLIS: 10,
+        minRelLIS: 0.12,
+        maxResults: 8,
+        weights: { wLIS: 0.6, wCPI: 0.3, wRIS: 0.1 },
+        penalizeHigherCPI: true,
+        nameBlocklist: ["redwood"],
+      }),
+    [filteredRows]
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans text-[15px] text-gray-900 p-6 space-y-6">
+      {/* Skip to content (keyboard users) */}
+      <a href="#main" className="skip-link print:hidden">
+        Skip to content
+      </a>
+
+      <header className="space-y-1">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">BlockPlane</h1>
+            <p className="text-sm opacity-80">
+              Baseline: <span className="font-mono">{BASELINE_NAME ?? "—"}</span>
+            </p>
+          </div>
+          {/* Actions */}
+          <div className="flex items-center gap-2 print:hidden">
+            <DarkModeToggle />
+            <button type="button" onClick={copyShare} className="rounded-md border px-3 py-1 text-sm">
+              Copy share link
+            </button>
+            <button type="button" onClick={() => window.print()} className="rounded-md border px-3 py-1 text-sm">
+              Print / Save PDF
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Keyboard shortcuts help (toggle with `/`) */}
+      <div id="bp-help" className="hidden rounded-lg border p-3 text-sm print:hidden" aria-live="polite">
+        <div className="font-medium mb-1">Keyboard shortcuts</div>
+        <ul className="list-disc pl-5 space-y-1">
+          <li>
+            <kbd>f</kbd> focus search
+          </li>
+          <li>
+            <kbd>l</kbd>/<kbd>r</kbd> switch LIS/RIS
+          </li>
+          <li>
+            <kbd>c</kbd> copy share link
+          </li>
+          <li>
+            <kbd>p</kbd> print / save PDF
+          </li>
+          <li>
+            <kbd>/</kbd> toggle this help
+          </li>
+        </ul>
+      </div>
+
+      {/* Share banner */}
+      {pendingShare && (
+        <ShareBanner share={pendingShare} onApply={applySharedState} onDismiss={dismissSharedState} />
+      )}
+
+      {/* Upload */}
+      <section>
+        <CsvUpload onText={handleUpload} />
+      </section>
+
+      {/* Status / Errors */}
+      {loading && <p>Loading data…</p>}
+      {!loading && error && (
+        <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">{error}</div>
+      )}
+
+      {/* Main content */}
+      {!loading && !error && rows.length > 0 && (
+        <section id="main" className="space-y-4">
+          {/* Filters */}
+          <FilterBar
+            categories={categoryOptions}
+            subtypes={subtypeOptions}
+            value={filters}
+            onChange={setFilters}
+            totalCount={rows.length}
+            filteredCount={filteredRows.length}
+          />
+
+          {/* Scenario swaps */}
+          <ScenarioPanel replacements={replacements} onChange={setReplacements} />
+
+          {/* KPIs */}
+          <StatsHeader rows={filteredRows} baselineRows={rows} parisTarget={PARIS_LIS_TARGET} altRecs={altRecs} />
+
+          {/* View toggle */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm opacity-80">View:</span>
+            <div className="inline-flex rounded-md border overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setViewMode("LIS")}
+                aria-pressed={viewMode === "LIS"}
+                className={`px-3 py-1 text-sm ${viewMode === "LIS" ? "bg-black text-white" : "bg-white"}`}
+              >
+                LIS
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("RIS")}
+                aria-pressed={viewMode === "RIS"}
+                className={`px-3 py-1 text-sm border-l ${viewMode === "RIS" ? "bg-black text-white" : "bg-white"}`}
+              >
+                RIS
+              </button>
+            </div>
+          </div>
+
+          {/* Chart */}
+          <div className="w-full h-[360px]">
+            <LifecycleBarChart
+              data={chartData}
+              viewMode={viewMode}
+              referenceLine={viewMode === "LIS" ? { value: PARIS_LIS_TARGET, label: "Paris target" } : null}
+              onSvgMount={setChartSvg}
+            />
+          </div>
+
+          {/* Materials table */}
+          <MaterialsTable rows={filteredRows} baselineRows={rows} parisTarget={PARIS_LIS_TARGET} />
+
+          {/* Export panel */}
+          <ExportPanel
+            rows={filteredRows}
+            baselineName={BASELINE_NAME}
+            version={APP_VERSION}
+            altRecs={altRecs}
+            chartSvg={chartSvg}
+          />
+
+          {/* CPI strip */}
+          <CpiStrip items={cpiItems} />
+
+          {/* Insights */}
+          <InsightWrapper rows={filteredRows} baselineName={BASELINE_NAME} csvText={csvText} />
+        </section>
+      )}
+
+      {/* Empty states */}
+      {!loading && !error && rows.length === 0 && (
+        <p className="text-sm opacity-80">
+          No rows to display yet. Upload a CSV or verify <code>CSV_PATH</code> in <code>src/config.ts</code>.
+        </p>
+      )}
+      {!loading && !error && rows.length > 0 && filteredRows.length === 0 && (
+        <p className="text-sm opacity-80">No rows match your current filters. Try clearing the filters above.</p>
+      )}
+
+      {/* Print-only layout */}
+        {/* Print-only layout (temporarily disabled to fix parse) */}
+        {false && (
+          <PrintLayout
+            stats={computeStats(materials)}
+            materials={materials}
+            alternatives={alternatives || []}
+            selectedMaterial={materials[0]?.name ?? "—"}
+          />
+        )}
+    </div>
+  );
+}

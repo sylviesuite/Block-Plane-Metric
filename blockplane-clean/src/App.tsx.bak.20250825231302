@@ -1,0 +1,124 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import FilterBar from './components/FilterBar';
+import MaterialsTable from './components/MaterialsTable';
+
+type Material = {
+  id: string;
+  name: string;
+  category: string;
+  subtype: string;
+  lifespan: number;
+  carbonFootprint: number;
+  recyclability: string;
+  cost: number;
+};
+
+async function loadMaterials(): Promise<Material[]> {
+  try {
+    const r = await fetch('/data/materials.json', { cache: 'no-store' });
+    if (r.ok) return (await r.json()) as Material[];
+  } catch {}
+  try {
+    const url = new URL('./data/materials.json', import.meta.url);
+    const r2 = await fetch(url, { cache: 'no-store' });
+    if (r2.ok) return (await r2.json()) as Material[];
+  } catch {}
+  return [];
+}
+
+const uniq = (arr: string[]) => Array.from(new Set(arr)).sort();
+
+const App: React.FC = () => {
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [query, setQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubtype, setSelectedSubtype] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const data = await loadMaterials();
+        setMaterials(Array.isArray(data) ? data : []);
+      } catch (e: any) {
+        setError(e?.message ?? 'Failed to load materials');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const categories = useMemo(
+    () => uniq(materials.map(m => m.category)),
+    [materials]
+  );
+  const subtypes = useMemo(
+    () => uniq(materials.map(m => m.subtype)),
+    [materials]
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return materials.filter(m => {
+      if (selectedCategory && m.category !== selectedCategory) return false;
+      if (selectedSubtype && m.subtype !== selectedSubtype) return false;
+      if (q && !(`${m.name} ${m.category} ${m.subtype}`.toLowerCase().includes(q))) return false;
+      return true;
+    });
+  }, [materials, query, selectedCategory, selectedSubtype]);
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-white">
+      <header className="print:hidden px-4 py-4 border-b border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-900">
+        <div className="mx-auto max-w-7xl">
+          <h1 className="text-2xl font-bold">BlockPlane Tailwind OK</h1>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-4 py-6 space-y-6">
+        <FilterBar
+          query={query}
+          onQueryChange={setQuery}
+          categories={categories}
+          subtypes={subtypes}
+          selectedCategory={selectedCategory}
+          onCategoryChange={(v) => { setSelectedCategory(v); setSelectedSubtype(''); }}
+          selectedSubtype={selectedSubtype}
+          onSubtypeChange={setSelectedSubtype}
+          filteredCount={filtered.length}
+          totalCount={materials.length}
+          materials={materials}
+        />
+
+        {error && (
+          <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-800 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
+            Failed to load data: {error}
+          </div>
+        )}
+        {loading && !error && (
+          <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-900 p-6 text-center">
+            Loading materials…
+          </div>
+        )}
+
+        {!loading && !error && (
+          <section id="materials" className="print:break-inside-avoid">
+            <MaterialsTable materials={filtered} />
+            {filtered.length === 0 && (
+              <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">No results match your filters.</p>
+            )}
+          </section>
+        )}
+
+        <footer className="hidden print:block mt-10 pt-6 border-t border-gray-200 text-center text-xs text-gray-600">
+          Generated on {new Date().toLocaleDateString()}
+        </footer>
+      </main>
+    </div>
+  );
+};
+
+export default App;

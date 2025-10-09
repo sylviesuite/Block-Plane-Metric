@@ -1,0 +1,41 @@
+/* ---- Print helpers ---- */
+@media print {
+  .print\:hidden {
+    display: none !important;
+  }
+  .print\:block {
+    display: block !important;
+  }
+  body {
+    background: #fff;
+  }
+}
+/* Screen defaults */
+.print\:block {
+  display: none;
+}
+
+/* ---- Dark mode (toggled by <html class="dark">) ---- */
+:root {
+  color-scheme: light dark;
+}
+html.dark body {
+  background: #0b0b0b;
+  color: #e5e7eb;
+}
+html.dark .bg-white {
+  background-color: #111827 !important;
+  color: #e5e7eb;
+}
+html.dark .border {
+  border-color: #374151 !important;
+}
+html.dark .bg-gray-50 {
+  background-color: #111827 !important;
+}
+html.dark .text-red-800 {
+  color: #fecaca !important;
+}
+html.dark .bg-red-50 {
+  background-color: #7f1d1d !important;
+}

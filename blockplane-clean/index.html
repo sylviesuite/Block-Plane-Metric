@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="BlockPlane — materials impact + cost viewer" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/vite.svg" />
+    <title>BlockPlane</title>
+    <script>
+      (() => {
+        try {
+          const saved = localStorage.getItem("theme");
+          const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const enableDark = saved ? saved === "dark" : prefersDark;
+          document.documentElement.classList.toggle("dark", enableDark);
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen antialiased bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+    <noscript><div style="padding:1rem;max-width:60ch;margin:2rem auto;">BlockPlane requires JavaScript to run.</div></noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

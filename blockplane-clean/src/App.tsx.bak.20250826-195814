@@ -1,0 +1,163 @@
+import React, { useEffect, useMemo, useState } from 'react';
+
+import DarkModeToggle from './components/DarkModeToggle';
+import ShareBanner from './components/ShareBanner';
+import FilterBar from './components/FilterBar';
+import MaterialsTable from './components/MaterialsTable';
+
+import type { Material, Sort } from './lib/types';
+
+/** Try public path first (/data/materials.json), then fallback to /src/data/materials.json */
+async function loadMaterials(): Promise<Material[]> {
+  try {
+    const r1 = await fetch('/data/materials.json', { cache: 'no-store' });
+    if (r1.ok) return (await r1.json()) as Material[];
+  } catch {}
+  const r2 = await fetch('/src/data/materials.json', { cache: 'no-store' });
+  if (!r2.ok) throw new Error('materials.json not found');
+  return (await r2.json()) as Material[];
+}
+
+function exportCsv(rows: Material[]) {
+  const header = [
+    'name','category','subtype','lifespan','carbonFootprint','recyclability','cost'
+  ];
+  const lines = rows.map(m => [
+    m.name, m.category, m.subtype,
+    m.lifespan, m.carbonFootprint, m.recyclability, m.cost
+  ]);
+  const csv = [header, ...lines]
+    .map(cols => cols.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'materials.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+export default function App() {
+  // data
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // filters + sort
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('');
+  const [subtype, setSubtype] = useState('');
+  const [sort, setSort] = useState<Sort>({ field: 'name', dir: 'asc' });
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const data = await loadMaterials();
+        if (alive) setMaterials(data);
+      } catch (e: any) {
+        if (alive) setError(e?.message ?? 'Failed to load materials');
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  // derived lists for filters
+  const categories = useMemo(
+    () => Array.from(new Set(materials.map(m => m.category))).sort(),
+    [materials]
+  );
+  const subtypes = useMemo(() => {
+    const base = category
+      ? materials.filter(m => m.category === category)
+      : materials;
+    return Array.from(new Set(base.map(m => m.subtype))).sort();
+  }, [materials, category]);
+
+  // filter + search
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return materials.filter(m => {
+      if (category && m.category !== category) return false;
+      if (subtype && m.subtype !== subtype) return false;
+      if (!q) return true;
+      return (
+        m.name.toLowerCase().includes(q) ||
+        m.category.toLowerCase().includes(q) ||
+        m.subtype.toLowerCase().includes(q)
+      );
+    });
+  }, [materials, query, category, subtype]);
+
+  // sort
+  const sorted = useMemo(() => {
+    const rows = [...filtered];
+    rows.sort((a, b) => {
+      const f = sort.field;
+      const dir = sort.dir === 'asc' ? 1 : -1;
+      const av = a[f] as any;
+      const bv = b[f] as any;
+      if (typeof av === 'number' && typeof bv === 'number') {
+        return (av - bv) * dir;
+      }
+      return String(av).localeCompare(String(bv)) * dir;
+    });
+    return rows;
+  }, [filtered, sort]);
+
+  if (loading) return <div className="p-6 text-gray-500">Loading…</div>;
+  if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 transition-colors">
+      {/* Header */}
+      <header className="print:hidden bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-white/10 sticky top-0 z-40">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+            BlockPlane Tailwind OK
+          </h1>
+          <DarkModeToggle />
+        </div>
+      </header>
+
+      {/* Main */}
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <ShareBanner
+          onShare={() => {
+            navigator.clipboard?.writeText(location.href).catch(() => {});
+            alert('Link copied to clipboard.');
+          }}
+          onExport={() => exportCsv(sorted)}
+          onPrint={() => window.print()}
+        />
+
+        {/* Filters */}
+        <section className="mb-4">
+          <FilterBar
+            searchTerm={query}
+            onSearchChange={setQuery}
+            category={category}
+            onCategory={(v: string) => { setCategory(v); setSubtype(''); }}
+            subtype={subtype}
+            onSubtype={setSubtype}
+            categories={categories}
+            subtypes={subtypes}
+            filteredCount={sorted.length}
+            totalCount={materials.length}
+          />
+        </section>
+
+        {/* Table */}
+        <section id="materials">
+          <MaterialsTable
+            rows={sorted}
+            sort={sort}
+            onSort={(s: Sort) => setSort(s)}
+          />
+        </section>
+      </main>
+    </div>
+  );
+}

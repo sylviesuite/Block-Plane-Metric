@@ -1,0 +1,140 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { Material, Sort } from './lib/types';
+import FilterBar from './components/FilterBar';
+import MaterialsTable from './components/MaterialsTable';
+import StatsHeader from './components/StatsHeader';
+import ShareBar from './components/ShareBar';
+
+async function loadMaterials(): Promise<Material[]> {
+  // Try public path first: /data/materials.json (recommended: put file in /public/data)
+  try {
+    const r1 = await fetch('/data/materials.json', { cache: 'no-store' });
+    if (r1.ok) return (await r1.json()) as Material[];
+  } catch {}
+  // Fallback: module-relative (src/data/materials.json)
+  const url = new URL('./data/materials.json', import.meta.url);
+  const r2 = await fetch(url);
+  return (await r2.json()) as Material[];
+}
+
+export default function App() {
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('');
+  const [subtype, setSubtype] = useState('');
+  const [sort, setSort] = useState<Sort | null>({ field: 'name', dir: 'asc' });
+
+  useEffect(() => {
+    loadMaterials().then(setMaterials).catch(console.error);
+  }, []);
+
+  const categories = useMemo(
+    () => Array.from(new Set(materials.map(m => m.category))).sort(),
+    [materials]
+  );
+
+  const subtypesByCategory = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const m of materials) {
+      if (!map.has(m.category)) map.set(m.category, new Set());
+      map.get(m.category)!.add(m.subtype);
+    }
+    const out: Record<string, string[]> = {};
+    for (const [k, v] of map.entries()) out[k] = Array.from(v).sort();
+    return out;
+  }, [materials]);
+
+  const subtypes = useMemo(() => {
+    if (category) return subtypesByCategory[category] ?? [];
+    return Array.from(new Set(materials.map(m => m.subtype))).sort();
+  }, [materials, category, subtypesByCategory]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let arr = materials;
+    if (q) {
+      arr = arr.filter(m =>
+        [m.name, m.category, m.subtype].some(x => String(x).toLowerCase().includes(q))
+      );
+    }
+    if (category) arr = arr.filter(m => m.category === category);
+    if (subtype) arr = arr.filter(m => m.subtype === subtype);
+    return arr;
+  }, [materials, query, category, subtype]);
+
+  const sorted = useMemo(() => {
+    if (!sort) return filtered;
+    const { field, dir } = sort;
+    return [...filtered].sort((a, b) => {
+      const av = (a as any)[field];
+      const bv = (b as any)[field];
+      if (typeof av === 'number' && typeof bv === 'number') return dir === 'asc' ? av - bv : bv - av;
+      return dir === 'asc'
+        ? String(av).localeCompare(String(bv))
+        : String(bv).localeCompare(String(av));
+    });
+  }, [filtered, sort]);
+
+  // KPIs
+  const totalMaterials = materials.length;
+  const avgLifespan = materials.length
+    ? materials.reduce((s, m) => s + (m.lifespan || 0), 0) / materials.length
+    : 0;
+  const topCategory = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const m of materials) counts.set(m.category, (counts.get(m.category) || 0) + 1);
+    let best = '';
+    let max = -1;
+    for (const [k, v] of counts) if (v > max) { max = v; best = k; }
+    return best;
+  }, [materials]);
+  const sustainabilityScore = useMemo(() => {
+    const map: Record<string, number> = { High: 90, Medium: 70, Low: 50 };
+    if (!materials.length) return 0;
+    const avg = materials.reduce((s, m) => s + (map[m.recyclability] ?? 60), 0) / materials.length;
+    return Math.round(avg);
+  }, [materials]);
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-gray-100">
+      <main className="mx-auto max-w-7xl px-4 py-6">
+        <h1 className="text-2xl font-bold mb-2">BlockPlane Tailwind OK</h1>
+
+        <ShareBar rows={filtered as any} total={materials.length} />
+
+        <StatsHeader
+          totalMaterials={totalMaterials}
+          avgLifespan={avgLifespan}
+          topCategory={topCategory}
+          sustainabilityScore={sustainabilityScore}
+        />
+
+        <FilterBar
+          query={query}
+          onQuery={setQuery}
+          category={category}
+          onCategory={(v) => { setCategory(v); setSubtype(''); }}
+          subtype={subtype}
+          onSubtype={setSubtype}
+          categories={categories}
+          subtypes={subtypes}
+        />
+
+        <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+          Showing {filtered.length} of {materials.length}
+        </div>
+
+        <MaterialsTable
+          rows={sorted}
+          sort={sort}
+          onSort={setSort}
+        />
+      </main>
+
+      {/* Print-only footer */}
+      <footer className="hidden print:block text-center text-xs text-gray-500 mt-8">
+        Generated on {new Date().toLocaleDateString()} • blockplane.com
+      </footer>
+    </div>
+  );
+}

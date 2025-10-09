@@ -1,0 +1,16 @@
+source_category,source_subtype,source_name_contains,alt_name,alt_category,alt_subtype,score,reasons,sustainability,cost_delta_pct,lifespan_delta_years
+Masonry,Concrete,Slab,Portland-limestone cement (Type IL),Masonry,Concrete (PLC),86,"~8–10% less clinker → lower CO₂; drop-in mix for slabs",high,-2,0
+Framing,2x6 Stud,Stud,FSC-certified lumber,Framing,2x6 Stud (FSC),82,"Verified sustainable forestry; similar structural performance",high,1,0
+Framing,2x6 Plates,Plates,LVL plates (engineered),Framing,LVL,74,"Better dimensional stability; reduced waste",medium,8,5
+Sheathing,OSB 4x8,OSB,FSC plywood 4x8,Sheathing,FSC Plywood,78,"Higher fastener holding; certified wood fiber",high,12,5
+Insulation,Fiberglass R-19,Fiberglass,Cellulose R-19 (recycled),Insulation,Cellulose,88,"~80% recycled content; good air-sealing with dense-pack",high,-5,0
+Cladding,Vinyl Siding,Vinyl, Fiber-cement lap siding,Cladding,Fiber-cement,81,"Higher durability; fire and UV resistance; recyclable offcuts",medium,10,15
+Cover,Asphalt Shingles,Shingles,Standing-seam metal roof,Roof,Metal,90,"50+ yr lifespan; recyclable; solar-ready",high,25,20
+Underlayment,Synthetic Felt,Synthetic,Recycled content underlayment,Roof,Recycled Underlayment,70,"PCR polymers; similar install",medium,3,0
+Insulation,Fiberglass R-38,Fiberglass,Blown-in cellulose R-38,Insulation,Cellulose,87,"Recycled paper; good coverage over joists",high,-4,0
+Subfloor,OSB 4x8,OSB,FSC plywood 4x8,Subfloor,FSC Plywood,76,"Moisture resilience; certified wood",high,10,5
+Finish,Red Oak,Oak,Bamboo/engineered flooring,Finish,Bamboo/Engineered,79,"Rapidly renewable; factory finish options",medium,-8,-5
+Drywall,Drywall 4x8,Drywall,Recycled-content gypsum board,Interior,Gypsum (recycled),72,"Synthetic gypsum + recycled paper facers",high,0,0
+Doors,Interior Hollow-Core,Hollow-Core,Solid-core with FSC skins,Interior,Door (FSC),68,"Longer life; better sound isolation",medium,15,10
+Windows,Vinyl Double-Pane,Vinyl,Aluminum-clad wood Low-E,Openings,Al-clad Low-E,85,"Lower thermal expansion; repairable; Low-E/argon",high,18,10
+Doors,Exterior Insulated Steel,Insulated Steel,Fiberglass insulated,Openings,Fiberglass Door,80,"Better dent/corrosion resistance; good R-value",high,12,5

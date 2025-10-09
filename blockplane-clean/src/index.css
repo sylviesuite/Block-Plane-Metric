@@ -1,0 +1,69 @@
+/* === Tailwind layers === */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === Print helpers === */
+@media print {
+  /* Force elements to hide/show when printing */
+  .print\:hidden {
+    display: none !important;
+  }
+  .print\:block {
+    display: block !important;
+  }
+
+  /* Clean white background for PDFs */
+  body {
+    background: #fff;
+  }
+}
+
+/* Default (screen) behavior so linters don't warn about empty rulesets */
+.print\:hidden {
+  display: initial !important;
+} /* no-op on screen */
+.print\:block {
+  display: none !important;
+}
+
+/* === Dark mode (html[class~="dark"]) === */
+:root {
+  color-scheme: light dark;
+}
+
+html.dark body {
+  background: #0b0b0b;
+  color: #e5e7eb;
+}
+
+/* Light touch overrides to keep contrast in dark mode */
+html.dark .bg-white {
+  background-color: #111827 !important;
+  color: #e5e7eb;
+}
+html.dark .border {
+  border-color: #374151 !important;
+}
+html.dark .bg-gray-50 {
+  background-color: #111827 !important;
+}
+html.dark .text-red-800 {
+  color: #fecaca !important;
+}
+html.dark .bg-red-50 {
+  background-color: #7f1d1d !important;
+}
+
+/* === Print helpers === */
+@media print {
+  .print\:hidden { display: none !important; }
+  .print\:block  { display: block !important; }
+  body { background: #fff; color: #000; }
+}
+.print\:hidden { display: initial !important; }
+.print\:block  { display: none !important; }
+
+/* Dark base */
+:root { color-scheme: light dark; }
+html.dark body { background: #0b0b0b; color: #e5e7eb; }

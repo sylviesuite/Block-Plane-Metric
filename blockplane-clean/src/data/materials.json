@@ -1,0 +1,10 @@
+[
+  {"id":"m1","name":"Aluminum 6061","category":"Metals","subtype":"Aluminum Alloy","lifespan":25,"carbonFootprint":12.5,"recyclability":"High","cost":2.45},
+  {"id":"m2","name":"Recycled Steel","category":"Metals","subtype":"Steel (Recycled)","lifespan":50,"carbonFootprint":40.0,"recyclability":"High","cost":1.15},
+  {"id":"m3","name":"Concrete (Portland Cement)","category":"Masonry","subtype":"Concrete","lifespan":75,"carbonFootprint":180.0,"recyclability":"Low","cost":0.10},
+  {"id":"m4","name":"Cross-Laminated Timber (CLT)","category":"Wood","subtype":"Mass Timber","lifespan":60,"carbonFootprint":-20.0,"recyclability":"Medium","cost":1.90},
+  {"id":"m5","name":"Hempcrete Block","category":"Composites","subtype":"Bio-composite","lifespan":80,"carbonFootprint":-15.0,"recyclability":"High","cost":1.60},
+  {"id":"m6","name":"Fiberglass Insulation","category":"Insulation","subtype":"Fiberglass","lifespan":30,"carbonFootprint":8.0,"recyclability":"Medium","cost":0.75},
+  {"id":"m7","name":"PVC (uPVC)","category":"Plastics","subtype":"Polyvinyl Chloride","lifespan":35,"carbonFootprint":2.1,"recyclability":"Low","cost":1.05},
+  {"id":"m8","name":"Low-iron Float Glass","category":"Glass","subtype":"Float Glass","lifespan":50,"carbonFootprint":25.0,"recyclability":"High","cost":0.95}
+]
