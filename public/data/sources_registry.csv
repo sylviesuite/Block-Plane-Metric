@@ -1,0 +1,4 @@
+source_id,source_name,version_date,license,notes
+ICE_SAMPLE,ICE Database (Sample values for demo),2025-01-01,Sample/Non-production,Illustrative placeholder values for UI demo only.
+EPA_IPCC_SAMPLE,EPA/IPCC Factors (Sample),2025-01-01,Sample/Non-production,Illustrative placeholder emission factors.
+USER_INPUT,User Input,2025-10-05,User-provided,User-supplied values for project-specific cases.

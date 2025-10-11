@@ -1,0 +1,43 @@
+{
+  "version": "0.1.0",
+  "faqs": [
+    {
+      "q": "What is the Lifecycle Impact Score (LIS)?",
+      "a": "LIS is a single score that summarizes embodied energy and carbon across five phases: Origin\u2192Production, Transport, Construction, Use/Maintenance, and End\u2011of\u2011Life. We weight phases and sum normalized impacts.",
+      "tags": [
+        "LIS",
+        "methodology"
+      ]
+    },
+    {
+      "q": "How is Paris Alignment % calculated?",
+      "a": "Paris % = 100 \u00d7 (1 \u2212 Project_kgCO2e_per_m2 / Budget_kgCO2e_per_m2). We show the pathway, scope (A1\u2013A5 or A\u2013C), building type, and version in the PDF appendix.",
+      "tags": [
+        "Paris",
+        "KPI"
+      ]
+    },
+    {
+      "q": "What is Benchmark 2000 (BM2000)?",
+      "a": "A reference assembly set used for comparisons. We store it as YAML (climate zone, assemblies, quantities) and version it. Carbon Saved and Cost Savings are reported relative to BM2000.",
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "q": "Where do the data values come from?",
+      "a": "The preview library uses illustrative sample values aligned to public sources (e.g., ICE/EPA/IPCC) for demo only. Production builds require licensed/verified datasets with source and date.",
+      "tags": [
+        "sources",
+        "provenance"
+      ]
+    },
+    {
+      "q": "Does framing include repaint cycles?",
+      "a": "No. Maintenance for paints/finishes lives with finish assemblies (e.g., siding). Framing maintenance is \u2248 none in our model.",
+      "tags": [
+        "maintenance"
+      ]
+    }
+  ]
+}
