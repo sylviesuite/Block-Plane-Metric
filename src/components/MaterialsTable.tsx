@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Material } from '../types';
 
 type Props = { data: Material[]; loading?: boolean; error?: string | null };
