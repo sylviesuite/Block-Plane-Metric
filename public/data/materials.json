@@ -1,0 +1,43 @@
+[
+  {
+    "id": "rammed-earth",
+    "name": "Rammed Earth (wall lift)",
+    "category": "Masonry",
+    "unit": "m³",
+    "embodiedEnergy_MJ_per_kg": 0.6,
+    "co2_kg_per_kg": 0.05,
+    "density_kg_per_m3": 2000,
+    "notes": "Low cement; regional soil. LIS/RIS sample only."
+  },
+  {
+    "id": "drywall-4x8-1-2",
+    "name": "Drywall Sheet 4x8 (1/2\")",
+    "category": "Gypsum",
+    "unit": "sheet",
+    "embodiedEnergy_MJ_per_kg": 4.5,
+    "co2_kg_per_kg": 0.23,
+    "density_kg_per_m3": 800,
+    "notes": "Source: National Gypsum, Shoals IN (per your project)."
+  },
+  {
+    "id": "red-oak-tg-5-4x3x10",
+    "name": "Red Oak T&G 5/4x3x10'",
+    "category": "Flooring",
+    "unit": "board",
+    "weight_kg": 4.54,
+    "embodiedEnergy_MJ_per_kg": 2.6,
+    "co2_kg_per_kg": 0.12,
+    "notes": "Point of origin: Pennsylvania. Weight ~10 lb per board
+
+cat > src/types.ts <<'EOF'
+export interface Material {
+  id: string;
+  name: string;
+  category?: string;
+  unit?: string;
+  weight_kg?: number;
+  embodiedEnergy_MJ_per_kg?: number;
+  co2_kg_per_kg?: number;
+  density_kg_per_m3?: number;
+  notes?: string;
+}
