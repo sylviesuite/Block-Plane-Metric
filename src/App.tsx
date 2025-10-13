@@ -1,115 +1,59 @@
-import { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import type { Material } from './types';
+import MaterialsTable from './components/MaterialsTable';
 
-const page = {
-  bg: '#0b1020',
-  fg: '#e8ecf1',
-  accent: '#7dd3fc',
-};
+function App() {
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [q, setQ] = useState('');
 
-export default function App() {
-  const [count, setCount] = useState(0);
+  useEffect(() => {
+    const run = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch('/data/materials.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        setMaterials(json);
+      } catch (e: any) {
+        setError(e?.message ?? 'Failed to load materials');
+      } finally {
+        setLoading(false);
+      }
+    };
+    run();
+  }, []);
+
+  const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    if (!term) return materials;
+    return materials.filter((m) =>
+      [m.name, m.category, m.notes].filter(Boolean).some((v) =>
+        String(v).toLowerCase().includes(term)
+      )
+    );
+  }, [materials, q]);
 
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        background: page.bg,
-        color: page.fg,
-        display: 'grid',
-        placeItems: 'center',
-        padding: '5rem 1.25rem',
-      }}
-    >
-      <section
-        style={{
-          width: 'min(960px, 92vw)',
-          display: 'grid',
-          gap: '1.25rem',
-          alignItems: 'start',
-        }}
-      >
-        <h1
-          style={{
-            fontSize: 'clamp(2rem, 4.5vw, 3.25rem)',
-            lineHeight: 1.1,
-            fontWeight: 800,
-            letterSpacing: '-0.02em',
-            margin: 0,
-            background: `linear-gradient(90deg, ${page.fg} 0%, ${page.accent} 100%)`,
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            color: 'transparent',
-          }}
-        >
-          Blockplane Integrated
-        </h1>
-
-        <p
-          style={{
-            margin: 0,
-            fontSize: 'clamp(1.05rem, 2.2vw, 1.25rem)',
-            opacity: 0.9,
-            maxWidth: '60ch',
-          }}
-        >
-          Vite + React scaffold is live. Edit <code>src/App.tsx</code> and the page updates
-          instantly.
+    <main className="p-6 max-w-5xl mx-auto">
+      <header className="mb-4">
+        <h1 className="text-2xl font-bold">BlockPlane — Materials Explorer</h1>
+        <p className="text-sm text-gray-600">
+          LIS/RIS/CPI-ready dataset (starter demo)
         </p>
-
-        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.25rem' }}>
-          <button
-            onClick={() => setCount((c) => c + 1)}
-            style={{
-              appearance: 'none',
-              border: '1px solid rgba(255,255,255,0.14)',
-              background: 'rgba(255,255,255,0.04)',
-              color: page.fg,
-              padding: '0.75rem 1rem',
-              borderRadius: '0.75rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'transform 120ms ease, background 120ms ease, border-color 120ms ease',
-            }}
-            onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.98)')}
-            onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-          >
-            Count is {count}
-          </button>
-
-          <a
-            href="https://github.com/sylviesuite/blockplane-integrated"
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.75rem 1rem',
-              borderRadius: '0.75rem',
-              textDecoration: 'none',
-              color: page.bg,
-              background: page.fg,
-              fontWeight: 700,
-            }}
-          >
-            View repo →
-          </a>
-        </div>
-      </section>
-
-      <footer
-        style={{
-          position: 'fixed',
-          insetInline: 0,
-          bottom: 16,
-          display: 'grid',
-          placeItems: 'center',
-          pointerEvents: 'none',
-        }}
-      >
-        <small style={{ opacity: 0.6, pointerEvents: 'auto' }}>Built with Vite + React</small>
-      </footer>
+      </header>
+      <div className="mb-3">
+        <input
+          className="border rounded px-3 py-2 w-full"
+          placeholder="Search materials…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+      </div>
+      <MaterialsTable data={filtered} loading={loading} error={error} />
     </main>
   );
 }
+
+export default App;
