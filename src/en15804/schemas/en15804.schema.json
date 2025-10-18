@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["material_id","version","metadata","indicators"],
+  "properties": {
+    "material_id": { "type": "string" },
+    "version": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "required": ["declared_unit"],
+      "properties": {
+        "declared_unit": { "enum": ["kg","m2","m3","piece"] },
+        "density_kg_per_m3": { "type": "number" },
+        "thickness_m": { "type": "number" }
+      }
+    },
+    "indicators": { "type": "object", "additionalProperties": { "type": "object" } }
+  }
+}
