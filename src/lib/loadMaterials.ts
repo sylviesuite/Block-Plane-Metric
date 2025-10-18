@@ -1,6 +1,8 @@
 // src/lib/loadMaterials.ts
 export async function loadMaterials() {
-  const res = await fetch('/data/materials.json'); // expects public/data/materials.json
+  // add a simple version query to break CDN/browser cache
+  const v = Date.now(); // or inject COMMIT SHA later
+  const res = await fetch(`/data/materials.json?v=${v}`, { cache: 'no-store' });
   const text = await res.text();
 
   // Replace illegal control chars U+0000–U001F except \t \n \r
@@ -10,3 +12,4 @@ export async function loadMaterials() {
 
   return JSON.parse(sanitized);
 }
+
