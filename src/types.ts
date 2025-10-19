@@ -1,11 +1,17 @@
-export interface Material {
+export type PhaseMap = {
+  pointOfOrigin: number;
+  production: number;
+  transport: number;
+  construction: number;
+  disposal: number;
+};
+
+export type Material = {
   id: string;
   name: string;
-  category?: string;
-  unit?: string;
-  weight_kg?: number;
-  embodiedEnergy_MJ_per_kg?: number;
-  co2_kg_per_kg?: number;
-  density_kg_per_m3?: number;
-  notes?: string;
-}
+  materialType: string;
+  sourceRegion?: string;
+  phases: PhaseMap;
+  total: number;
+  meta?: { unit?: string };
+};

@@ -1,57 +1,58 @@
-// src/lib/loadMaterials.ts
-import type { Material } from "../types";
+import type { Material, PhaseMap } from "../types";
+
+// Accepts any of: pointOfOrigin / pointofOrigin and fills missing fields with 0
+function normalizePhases(raw: any): PhaseMap {
+  const p: any = raw || {};
+  const origin =
+    typeof p.pointOfOrigin === "number"
+      ? p.pointOfOrigin
+      : typeof p.pointofOrigin === "number"
+      ? p.pointofOrigin
+      : 0;
+
+  return {
+    pointOfOrigin: Number(origin) || 0,
+    production: Number(p.production) || 0,
+    transport: Number(p.transport) || 0,
+    construction: Number(p.construction) || 0,
+    disposal: Number(p.disposal) || 0,
+  };
+}
+
+function withTotal(m: any): Material {
+  const phases = normalizePhases(m.phases);
+  const total =
+    typeof m.total === "number"
+      ? m.total
+      : Object.values(phases).reduce((a: number, b: number) => a + (Number(b) || 0), 0);
+
+  return {
+    id: String(m.id ?? m.name ?? crypto.randomUUID()),
+    name: String(m.name ?? "Unnamed"),
+    materialType: String(m.materialType ?? m.category ?? "Unknown"),
+    sourceRegion: m.sourceRegion ? String(m.sourceRegion) : undefined,
+    phases,
+    total: Number(total) || 0,
+    meta: m.meta && typeof m.meta === "object" ? { unit: m.meta.unit } : undefined,
+  };
+}
 
 export async function loadMaterials(): Promise<Material[]> {
-  // Cache-bust per build (uses commit on Netlify if provided)
-  const v = import.meta.env.VITE_BUILD_VERSION ?? Date.now();
-  const url = `./data/materials.v2.json?v=${encodeURIComponent(String(v))}`;
+  // prefer local static import in dev (rock solid)
+  const mode = import.meta.env.VITE_DATA_SOURCE || "import";
 
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-  const text = await res.text();
-
-  // Sanitize control chars ONLY while inside JSON string tokens.
-  // Handles raw newlines and other U+0000..U+001F even if they slipped into quotes.
-  let out = "";
-  let inStr = false;
-  let escaped = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-
-    if (!inStr) {
-      out += ch;
-      if (ch === '"') inStr = true;
-      continue;
-    }
-
-    // We are inside a string
-    if (escaped) {
-      out += ch;           // keep escaped char as-is
-      escaped = false;
-      continue;
-    }
-
-    if (ch === "\\") {
-      out += ch;
-      escaped = true;
-      continue;
-    }
-
-    if (ch === '"') {
-      out += ch;
-      inStr = false;
-      continue;
-    }
-
-    const code = ch.charCodeAt(0);
-    if (code >= 0x00 && code <= 0x1f) {
-      out += `\\u${code.toString(16).padStart(4, "0")}`;
-    } else {
-      out += ch;
-    }
+  if (mode === "public") {
+    // fetch from /public for deploy parity
+    const v = import.meta.env.VITE_BUILD_VERSION ?? Date.now();
+    const url = new URL("/data/materials.v2.json", window.location.origin);
+    url.searchParams.set("v", String(v));
+    const res = await fetch(url.toString(), { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const arr = await res.json();
+    return (Array.isArray(arr) ? arr : []).map(withTotal);
   }
 
-  return JSON.parse(out) as Material[];
+  // default: import bundled JSON
+  const imported = (await import("../data/materials.v2.json")).default as any[];
+  return (Array.isArray(imported) ? imported : []).map(withTotal);
 }
