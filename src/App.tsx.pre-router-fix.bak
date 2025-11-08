@@ -1,0 +1,30 @@
+import React from "react";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import LifecycleBreakdown from "./pages/LifecycleBreakdown";
+
+function Home() {
+  return (
+    <div className="space-y-2">
+      <h1 className="text-xl font-semibold">BlockPlane Home</h1>
+      <p>Go to the lifecycle chart to verify rendering.</p>
+      <Link className="underline" to="/lifecycle">Open Lifecycle</Link>
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <div className="p-4">
+        <nav className="mb-4 flex gap-4">
+          <Link to="/">Home</Link>
+          <Link to="/lifecycle">Lifecycle</Link>
+        </nav>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/lifecycle" element={<LifecycleBreakdown />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
+}

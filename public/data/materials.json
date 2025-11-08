@@ -1,0 +1,47 @@
+[
+  {
+    "id": "rammed-earth-10",
+    "name": "Rammed Earth (10\" wall)",
+    "materialType": "Masonry",
+    "sourceRegion": "MI",
+    "phases": {
+      "pointOfOrigin": 12.4,
+      "production": 18.6,
+      "transport": 6.1,
+      "construction": 9.2,
+      "disposal": 2.3
+    },
+    "total": 48.6,
+    "meta": { "unit": "kg CO₂e per m² wall" }
+  },
+  {
+    "id": "cross-lam-timber",
+    "name": "Cross-Laminated Timber (CLT)",
+    "materialType": "Wood",
+    "sourceRegion": "PNW",
+    "phases": {
+      "pointOfOrigin": 8.2,
+      "production": 10.4,
+      "transport": 3.5,
+      "construction": 5.1,
+      "disposal": 1.3
+    },
+    "total": 28.5,
+    "meta": { "unit": "kg CO₂e per m² panel" }
+  },
+  {
+    "id": "recycled-steel",
+    "name": "Recycled Steel Stud",
+    "materialType": "Metals",
+    "sourceRegion": "ON",
+    "phases": {
+      "pointOfOrigin": 9.6,
+      "production": 24.1,
+      "transport": 4.8,
+      "construction": 6.9,
+      "disposal": 2.6
+    },
+    "total": 48.0,
+    "meta": { "unit": "kg CO₂e per m² assembly" }
+  }
+]

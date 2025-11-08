@@ -1,0 +1,2 @@
+.chart-fixed-h { height: 360px; }
+@media (min-width: 768px){ .chart-fixed-h { height: 420px; } }

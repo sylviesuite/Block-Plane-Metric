@@ -2,33 +2,30 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blockplane Integrated</title>
-
-    <!-- SEO -->
     <meta
-      name="description"
-      content="Blockplane Integrated — modern Vite + React scaffold, auto-deployed to Netlify."
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
+    <title>BlockPlane — Materials Explorer</title>
 
-    <!-- Open Graph -->
-    <meta property="og:title" content="Blockplane Integrated" />
-    <meta
-      property="og:description"
-      content="Modern Vite + React scaffold, auto-deployed to Netlify."
-    />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://blockplane-integrated.netlify.app/og.png" />
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://blockplane-integrated.netlify.app/og.png" />
-
+    <!-- Favicons / app icons -->
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <script type="module" src="/src/main.tsx"></script>
+    <link rel="icon" type="image/png" href="/og.png" />
+
+    <!-- Basic social cards (optional; tweak URLs/text as needed) -->
+    <meta name="description" content="Modern Vite + React scaffold for BlockPlane — Materials Explorer." />
+    <meta property="og:title" content="BlockPlane — Materials Explorer" />
+    <meta property="og:description" content="Explore materials data and lifecycle impacts." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="/og.png" />
   </head>
+
   <body>
     <div id="root"></div>
+
+    <!-- Vite dev entry: keep this EXACT for development -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,44 +1,22 @@
-// scripts/sanitize-json.mjs
-import fs from "node:fs";
-import path from "node:path";
+// src/lib/loadMaterials.ts
+export async function loadMaterials() {
+const v = import.meta.env.VITE_BUILD_VERSION ?? Date.now();
+const res = await fetch(`/data/materials.v2.json?v=${v}`, { cache: "no-store" });
 
-// Directories to clean
-const roots = ["public/data"];
+  const text = await res.text();
 
-// Matches JSON string tokens, handling escapes: " ... "
-const STRING_RE = /"([^"\\]|\\.)*"/g;
-// Control chars 0x00-0x1F (including \n, \r, \t)
-const CTRL_RE = /[\u0000-\u001F]/g;
+  // Sanitize ONLY inside JSON string tokens
+  const STRING_RE = /"([^"\\]|\\.)*"/g;
+  const CTRL_RE = /[\u0000-\u001F]/g;
 
-function sanitizeJsonStringsOnly(text) {
-  return text.replace(STRING_RE, (str) => {
-    // str still includes the outer quotes; preserve them
+  const sanitized = text.replace(STRING_RE, (str) => {
     const inner = str.slice(1, -1);
     const cleanedInner = inner.replace(CTRL_RE, (c) =>
       `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`
     );
     return `"${cleanedInner}"`;
   });
+
+  return JSON.parse(sanitized);
 }
 
-let changed = 0;
-for (const root of roots) {
-  if (!fs.existsSync(root)) continue;
-  for (const f of fs.readdirSync(root)) {
-    if (!f.endsWith(".json")) continue;
-    const p = path.join(root, f);
-    const txt = fs.readFileSync(p, "utf8");
-    const cleaned = sanitizeJsonStringsOnly(txt);
-    if (cleaned !== txt) {
-      // Validate we didn’t break JSON
-      try { JSON.parse(cleaned); } catch (e) {
-        console.error(`❌ ${p}: sanitizer produced invalid JSON: ${e.message}`);
-        process.exit(1);
-      }
-      fs.writeFileSync(p, cleaned, "utf8");
-      console.log(`sanitized(strings): ${p}`);
-      changed++;
-    }
-  }
-}
-console.log(changed ? `✅ sanitized ${changed} file(s)` : "✅ no changes needed");
